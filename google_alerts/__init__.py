@@ -91,7 +91,7 @@ def obfuscate(p, action):
             return e.decode()
 
 
-CONFIG_PATH = os.path.expanduser('~/.config/google_alerts')
+CONFIG_PATH = os.getenv("GOOGLE_ALERT_CONFIG", os.path.expanduser('~/.config/google_alerts'))
 CONFIG_FILE = os.path.join(CONFIG_PATH, 'config.json')
 SESSION_FILE = os.path.join(CONFIG_PATH, 'session')
 CONFIG_DEFAULTS = {'email': '', 'password': '', 'py2': PY2}

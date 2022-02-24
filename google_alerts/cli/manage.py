@@ -7,7 +7,9 @@ import os
 import pickle
 import sys
 import time
+import random
 from argparse import ArgumentParser
+import undetected_chromedriver as uc
 
 import selenium.webdriver as webdriver
 
@@ -27,7 +29,7 @@ __status__ = "BETA"
 
 
 AUTH_COOKIE_NAME = 'SIDCC'
-CONFIG_PATH = os.path.expanduser('~/.config/google_alerts')
+CONFIG_PATH = os.getenv("GOOGLE_ALERT_CONFIG", os.path.expanduser('~/.config/google_alerts'))
 CONFIG_FILE = os.path.join(CONFIG_PATH, 'config.json')
 SESSION_FILE = os.path.join(CONFIG_PATH, 'session')
 CONFIG_DEFAULTS = {'email': '', 'password': '', 'py2': PY2}
@@ -119,16 +121,26 @@ def main():
         ga = GoogleAlerts(config['email'], config['password'])
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_experimental_option("excludeSwitches", ['enable-automation'])
+        chrome_options.add_argument("window-size=1280,800")
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
+
+        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         caps = webdriver.DesiredCapabilities.CHROME.copy()
         caps['acceptInsecureCerts'] = True
-        with contextlib.closing(webdriver.Chrome(args.driver, options=chrome_options)) as driver:
+        with contextlib.closing(uc.Chrome()) as driver:
             driver.get('https://stackoverflow.com/users/signup?ssrc=head&returnurl=%2fusers%2fstory%2fcurrent%27')
             time.sleep(3)
             driver.find_element_by_xpath('//*[@id="openid-buttons"]/button[1]').click()
-            driver.find_element_by_xpath('//input[@type="email"]').send_keys(config['email'])
+            time.sleep(4)
+            for letter in config['email']:
+                driver.find_element_by_xpath('//input[@type="email"]').send_keys(letter)
+                time.sleep(random.random())
+            time.sleep(.5)
             driver.find_element_by_xpath('//*[@id="identifierNext"]').click()
-            time.sleep(3)
+            time.sleep(2.5)
             driver.find_element_by_xpath('//input[@type="password"]').send_keys(config['password'])
+            time.sleep(1.5)
             driver.find_element_by_xpath('//*[@id="passwordNext"]').click()
             time.sleep(3)
             driver.get('https://www.google.com/alerts')
